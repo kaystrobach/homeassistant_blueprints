@@ -1,0 +1,77 @@
+blueprint:
+  name: Cover blueprint with ledvance remote
+  domain: automation
+  input:
+    remote_entity:
+      name: Remote Entity
+      description: The Remote to controlle the cover
+      selector:
+        device:
+          integration: zha
+          manufacturer: "OSRAM"
+          model: "Lightify Switch Mini"
+    cover_entities:
+      name: Cover Entities
+      description: The covers to controll with the remote
+      selector:
+        target:
+          entity:
+            domain: cover
+
+trigger:
+  - device_id: !input remote_entity
+    domain: zha
+    platform: device
+    type: remote_button_short_press
+    subtype: button_1
+    id: top
+  - device_id: !input remote_entity
+    domain: zha
+    platform: device
+    type: remote_button_short_press
+    subtype: button_2
+    id: middle
+  - device_id: !input remote_entity
+    domain: zha
+    platform: device
+    type: remote_button_short_press
+    subtype: button_3
+    id: bottom
+  - device_id: !input remote_entity
+    domain: zha
+    platform: device
+    type: remote_button_long_release
+    subtype: button_2
+    id: hold-middle
+
+action:
+  - if:
+      - condition: trigger
+        id: top
+    then:
+      - service: cover.open_cover
+        data: {}
+        target: !input cover_entities
+  - if:
+      - condition: trigger
+        id: middle
+    then:
+      - service: cover.stop_cover
+        data: {}
+        target: !input cover_entities
+  - if:
+      - condition: trigger
+        id: bottom
+    then:
+      - service: cover.close_cover
+        data: {}
+        target: !input cover_entities
+  - if:
+      - condition: trigger
+        id: hold-middle
+    then:
+      - service: cover.set_cover_position
+        data:
+          position: 74
+        target: !input cover_entities
+mode: single
